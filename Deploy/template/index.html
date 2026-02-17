@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>Diabetic Retinopathy Detection - AI Powered Screening</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+  
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --success-color: #27ae60;
+      --danger-color: #e74c3c;
+      --light-bg: #ecf0f1;
+      --dark-text: #2c3e50;
+    }
+
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    .hero-section {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      padding: 3rem;
+      margin: 2rem auto;
+      max-width: 900px;
+    }
+
+    .app-title {
+      color: var(--primary-color);
+      font-weight: 700;
+      margin-bottom: 1rem;
+      font-size: 2.5rem;
+      text-align: center;
+    }
+
+    .app-subtitle {
+      color: #7f8c8d;
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+    }
+
+    .upload-area {
+      border: 3px dashed var(--secondary-color);
+      border-radius: 15px;
+      padding: 3rem;
+      text-align: center;
+      background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .upload-area:hover {
+      border-color: var(--primary-color);
+      background: linear-gradient(45deg, #e9ecef, #dee2e6);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .upload-area.dragover {
+      border-color: var(--success-color);
+      background: rgba(39, 174, 96, 0.1);
+    }
+
+    .upload-icon {
+      font-size: 4rem;
+      color: var(--secondary-color);
+      margin-bottom: 1rem;
+    }
+
+    .upload-text {
+      font-size: 1.2rem;
+      color: var(--dark-text);
+      margin-bottom: 1rem;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .btn-upload {
+      background: linear-gradient(45deg, var(--secondary-color), #2980b9);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 25px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+    }
+
+    .btn-upload:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+      background: linear-gradient(45deg, #2980b9, var(--secondary-color));
+    }
+
+    .btn-analyze {
+      background: linear-gradient(45deg, var(--success-color), #229954);
+      color: white;
+      border: none;
+      padding: 12px 40px;
+      border-radius: 25px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+      margin-top: 1rem;
+    }
+
+    .btn-analyze:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+      background: linear-gradient(45deg, #229954, var(--success-color));
+    }
+
+    .btn-analyze:disabled {
+      background: #95a5a6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .file-preview {
+      margin-top: 2rem;
+      text-align: center;
+    }
+
+    .preview-image {
+      max-width: 300px;
+      max-height: 200px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .file-name {
+      margin-top: 1rem;
+      color: var(--dark-text);
+      font-weight: 500;
+    }
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .loading-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 15px;
+      text-align: center;
+    }
+
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--secondary-color);
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .features-section {
+      margin-top: 3rem;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+    }
+
+    .feature-card {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 1.5rem;
+      border-radius: 10px;
+      text-align: center;
+      margin-bottom: 1rem;
+      transition: transform 0.3s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .feature-icon {
+      font-size: 2rem;
+      color: var(--secondary-color);
+      margin-bottom: 1rem;
+    }
+
+    .alert-custom {
+      border-radius: 10px;
+      border: none;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (max-width: 768px) {
+      .hero-section {
+        margin: 1rem;
+        padding: 2rem;
+      }
+      
+      .app-title {
+        font-size: 2rem;
+      }
+      
+      .upload-area {
+        padding: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <h5>Analyzing Image...</h5>
+      <p class="text-muted">Please wait while our AI analyzes your retinal image</p>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="container">
+    <div class="hero-section">
+      <!-- Header -->
+      <div class="text-center mb-4">
+        <h1 class="app-title">
+          <i class="fas fa-eye"></i> Diabetic Retinopathy Detection
+        </h1>
+        <p class="app-subtitle">AI-Powered Screening for Early Detection of Diabetic Eye Disease</p>
+      </div>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show alert-custom" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <!-- Upload Section -->
+      <div class="upload-area" id="uploadArea">
+        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+        <h3 class="upload-text">Upload Retinal Image</h3>
+        <p class="text-muted">Drag and drop or click to select an image</p>
+        <p class="text-muted small">Supported formats: JPG, PNG, TIFF, TIF</p>
+        
+        <form action="/upload" method="post" enctype="multipart/form-data" id="uploadForm">
+          <input type="file" name="image" id="fileInput" class="file-input" accept="image/*">
+          <button type="button" class="btn btn-upload" onclick="document.getElementById('fileInput').click()">
+            <i class="fas fa-folder-open"></i> Choose File
+          </button>
+          <button type="submit" class="btn btn-analyze" id="analyzeBtn" disabled>
+            <i class="fas fa-microscope"></i> Analyze Image
+          </button>
+        </form>
+      </div>
+
+      <!-- File Preview -->
+      <div class="file-preview" id="filePreview" style="display: none;">
+        <img id="previewImage" class="preview-image" alt="Preview">
+        <div class="file-name" id="fileName"></div>
+      </div>
+
+      <!-- Features Section -->
+      <div class="features-section">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="feature-card">
+              <i class="fas fa-brain feature-icon"></i>
+              <h5>Deep Learning</h5>
+              <p class="text-muted small">Advanced CNN with 73% accuracy</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="feature-card">
+              <i class="fas fa-clock feature-icon"></i>
+              <h5>Fast Results</h5>
+              <p class="text-muted small">Get instant predictions</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="feature-card">
+              <i class="fas fa-shield-alt feature-icon"></i>
+              <h5>Secure</h5>
+              <p class="text-muted small">Your images are processed locally</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5 JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <script>
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const filePreview = document.getElementById('filePreview');
+    const previewImage = document.getElementById('previewImage');
+    const fileName = document.getElementById('fileName');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const uploadForm = document.getElementById('uploadForm');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    // Drag and drop functionality
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        fileInput.files = files;
+        handleFileSelect();
+      }
+    });
+
+    // File selection handler
+    fileInput.addEventListener('change', handleFileSelect);
+
+    function handleFileSelect() {
+      const file = fileInput.files[0];
+      if (file) {
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+          // Check if it's a TIFF file
+          if (file.name.toLowerCase().endsWith(('.tif', '.tiff'))) {
+            // For TIFF files, we'll show a placeholder since browsers can't display TIFF directly
+            previewImage.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2Y4ZjlmYSIgc3Ryb2tlPSIjMzQ5OGRiIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8dGV4dCB4PSIxNTAiIHk9IjgwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjE2IiBmaWxsPSIjMmMzZTUwIj4KICAgIDx0c3BhbiB4PSIxNTAiIGR5PSI2MCI+VGlmZiBJbWFnZTwvdHNwYW4+CiAgPC90ZXh0PgogIDx0ZXh0IHg9IjE1MCIgeT0iMTIwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjEyIiBmaWxsPSIjN2Y4YzhkIj4KICAgIDx0c3BhbiB4PSIxNTAiIGR5PSIxMDAiPkltYWdlIHdpbGwgYmUgY29udmVydGVkIGZvciBhbmFseXNpczwvdHNwYW4+CiAgPC90ZXh0PgogIDx0c3BhbiB4PSIxNTAiIHk9IjE1MCI+CiAgICA8aSBjbGFzcz0iZmFzIGZhLWV5ZSIgc3R5bGU9ImZvbnQtc2l6ZTogMjRweDsgY29sb3I6ICMzNDk4ZGI7Ij48L2k+CiAgPC90c3Bhbj4KPC9zdmc+';
+          } else {
+            // For other image formats, show the actual image
+            previewImage.src = e.target.result;
+          }
+          fileName.textContent = file.name;
+          filePreview.style.display = 'block';
+          analyzeBtn.disabled = false;
+        };
+        
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Form submission with loading
+    uploadForm.addEventListener('submit', function(e) {
+      loadingOverlay.style.display = 'flex';
+    });
+
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+  </script>
+</body>
+</html>
