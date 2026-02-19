@@ -45,4 +45,4 @@ Result
    `FLASK_APP=app.py FLASK_DEBUG=1 flask run  [port number, default=5000]`
 1. Using a web browser, go to `http://127.0.0.1:[port]/`
    
-7.PROJECT VIDEO https://drive.google.com/file/d/15BPmk42279u1QbG7P8QOUoL3jTDoddDg/view?usp=drivesdk
+  PROJECT VIDEO https://drive.google.com/file/d/15BPmk42279u1QbG7P8QOUoL3jTDoddDg/view?usp=drivesdk
